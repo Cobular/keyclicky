@@ -1,3 +1,5 @@
+mod lib_res;
+
 use windows::core::{IntoParam, PCSTR, Param};
 use windows::Win32::{Media::Audio::{PlaySoundA, SND_ASYNC}};
 use windows::{
@@ -9,14 +11,18 @@ use windows::{
         },
     },
 };
-use log::{debug, info, warn};
+use log::{debug};
+
+use crate::lib_res::audio::play_sound;
 
 static mut RUNNING: bool = true;
 
-// #[no_mangle]
-// pub extern "C" fn init() -> HHOOK {
-    
-// }
+#[no_mangle]
+#[allow(non_snake_case)]
+extern "system" fn DllMain(_: HINSTANCE, _: u32, _: u32) -> BOOL {
+    true.into()
+}
+
 
 extern "system" fn hook(hook_code: i32, v_key_code: WPARAM, key_message_info: LPARAM) -> LRESULT {
     if hook_code < 0 {
@@ -29,20 +35,16 @@ extern "system" fn hook(hook_code: i32, v_key_code: WPARAM, key_message_info: LP
         _ => debug!("Something Else"),
     }
 
-    let sound_str: Param<PCSTR> = "./src/gun.wav".into_param();
-
-    unsafe {
-        PlaySoundA(sound_str.abi(), HINSTANCE::default(), SND_ASYNC);
-    }
+    play_sound();
 
     unsafe { CallNextHookEx(HHOOK(0), hook_code, v_key_code, key_message_info) }
 }
 
 #[no_mangle]
 pub extern "C" fn set_hook() -> HHOOK {
-    unsafe {
-        RUNNING = true;
+    env_logger::init();
 
+    unsafe {
         let hook = SetWindowsHookExA(WH_KEYBOARD_LL, Some(hook), HINSTANCE(0), 0)
             .expect("Failed to set hook");
         debug!("Hook set: {hook:?}");
@@ -54,7 +56,6 @@ pub extern "C" fn set_hook() -> HHOOK {
 pub extern "C" fn unset_hook(hook: HHOOK) {
     debug!("Shutting down hook: {hook:?}");
     unsafe {
-        RUNNING = false;
         UnhookWindowsHookEx(hook).unwrap();
     }
 }

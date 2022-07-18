@@ -1,9 +1,11 @@
-mod lib_wrapper;
+mod bin_res;
 
+use std::{io::BufReader, fs::File};
 
 use log::debug;
+use rodio::{OutputStream, Decoder, Source};
 
-use crate::lib_wrapper::*;
+use crate::bin_res::lib_wrapper::*;
 
 fn main() {
     env_logger::init();

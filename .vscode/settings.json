@@ -9,6 +9,7 @@
     "LPARAM",
     "LRESULT",
     "PCSTR",
+    "rodio",
     "WPARAM"
   ]
 }
