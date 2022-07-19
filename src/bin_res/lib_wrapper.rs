@@ -10,6 +10,14 @@ lazy_static! {
   };
 }
 
+pub fn lib_init() -> Result<(), Box<dyn std::error::Error>> {
+  unsafe {
+      let func: Symbol<unsafe extern fn() -> ()> = LIB.get(b"init")?;
+      func();
+      Ok(())
+  }
+}
+
 pub fn lib_set_hook() -> Result<HHOOK, Box<dyn std::error::Error>> {
   unsafe {
       let func: Symbol<unsafe extern fn() -> HHOOK> = LIB.get(b"set_hook")?;
